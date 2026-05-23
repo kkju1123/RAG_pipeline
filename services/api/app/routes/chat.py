@@ -8,7 +8,6 @@ from fastapi import APIRouter, Depends, BackgroundTasks
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-from services.api.app.auth.jwt import get_current_user
 # Import classes for type hinting
 from services.api.app.cache.semantic import SemanticCache, semantic_cache as global_cache
 from services.api.app.memory.postgres import PostgresMemory, postgres_memory as global_memory
@@ -36,6 +35,7 @@ def get_llm_client() -> RayLLMClient:
 class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, description="The user's query")
     session_id: str = Field(default=None, description="UUID for the conversation thread")
+    language: str = Field(default="Chinese", description="Response language")
 
 # --- Routes ---
 
@@ -43,8 +43,6 @@ class ChatRequest(BaseModel):
 async def chat_stream(
     req: ChatRequest, 
     background_tasks: BackgroundTasks,
-    user: dict = Depends(get_current_user),
-    # Inject dependencies via FastAPI Depends
     cache: SemanticCache = Depends(get_semantic_cache),
     memory: PostgresMemory = Depends(get_memory),
     llm: RayLLMClient = Depends(get_llm_client)
@@ -55,7 +53,7 @@ async def chat_stream(
     """
     # 1. Setup Session Context
     session_id = req.session_id or str(uuid.uuid4())
-    user_id = user["id"]
+    user_id = "demo-user"
     
     logger.info(f"Chat request for session {session_id} from user {user_id}")
     
@@ -94,7 +92,8 @@ async def chat_stream(
         messages=history_dicts,
         current_query=req.message,
         documents=[],
-        plan=[]
+        plan=[],
+        language=req.language
     )
 
     # 5. Define Generator for Streaming Response

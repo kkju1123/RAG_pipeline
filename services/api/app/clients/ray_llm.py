@@ -1,50 +1,47 @@
 # services/api/app/clients/ray_llm.py
-import httpx
 import logging
 import backoff
 from typing import List, Dict, Optional
+from openai import AsyncOpenAI
 from services.api.app.config import settings
 
 logger = logging.getLogger(__name__)
 
 class RayLLMClient:
-    """
-    Async Client with proper Connection Pooling.
-    """
     def __init__(self):
-        self.endpoint = settings.RAY_LLM_ENDPOINT 
-        # Client is initialized in startup_event
-        self.client: Optional[httpx.AsyncClient] = None
+        self.client: Optional[AsyncOpenAI] = None
 
     async def start(self):
-        """Called during App Startup"""
-        # Limits: prevent opening too many connections to Ray
-        limits = httpx.Limits(max_keepalive_connections=20, max_connections=50)
-        self.client = httpx.AsyncClient(
-            timeout=120.0, 
-            limits=limits
+        self.client = AsyncOpenAI(
+            api_key=settings.OPENAI_API_KEY,
+            base_url=settings.OPENAI_API_BASE,
         )
-        logger.info("Ray LLM Client initialized.")
+        logger.info(f"DeepSeek Client initialized. Model: {settings.LLM_MODEL}")
 
     async def close(self):
-        """Called during App Shutdown"""
         if self.client:
-            await self.client.aclose()
+            await self.client.close()
 
-    @backoff.on_exception(backoff.expo, httpx.HTTPError, max_tries=3)
-    async def chat_completion(self, messages: List[Dict], temperature: float = 0.7, json_mode: bool = False) -> str:
+    @backoff.on_exception(backoff.expo, Exception, max_tries=3)
+    async def chat_completion(
+        self,
+        messages: List[Dict],
+        temperature: float = 0.7,
+        json_mode: bool = False
+    ) -> str:
         if not self.client:
-            raise RuntimeError("Client not initialized. Call start() first.")
+            raise RuntimeError("Client not initialized.")
 
-        payload = {
+        kwargs = {
+            "model": settings.LLM_MODEL,
             "messages": messages,
             "temperature": temperature,
-            "max_tokens": 1024
+            "max_tokens": 1024,
         }
-        
-        response = await self.client.post(self.endpoint, json=payload)
-        response.raise_for_status()
-        return response.json()["choices"][0]["message"]["content"]
+        if json_mode:
+            kwargs["response_format"] = {"type": "json_object"}
 
-# Global Instance (Managed by Lifespan in main.py)
+        response = await self.client.chat.completions.create(**kwargs)
+        return response.choices[0].message.content
+
 llm_client = RayLLMClient()

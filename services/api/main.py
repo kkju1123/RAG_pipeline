@@ -5,7 +5,7 @@ from services.api.app.clients.neo4j import neo4j_client
 from services.api.app.clients.ray_llm import llm_client
 from services.api.app.clients.ray_embed import embed_client
 from services.api.app.cache.redis import redis_client
-from services.api.app.routes import chat, upload, health
+from services.api.app.routes import chat, upload, health, ingest
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -18,7 +18,7 @@ async def lifespan(app: FastAPI):
     neo4j_client.connect()
     await redis_client.connect()
     await llm_client.start()
-    await embed_client.start()
+    # await embed_client.start()
     
     yield
     
@@ -36,6 +36,7 @@ app = FastAPI(title="Enterprise RAG Platform", version="1.0.0", lifespan=lifespa
 app.include_router(chat.router, prefix="/api/v1/chat", tags=["Chat"])
 app.include_router(upload.router, prefix="/api/v1/upload", tags=["Upload"])
 app.include_router(health.router, prefix="/health", tags=["Health"])
+app.include_router(ingest.router, prefix="/api/v1/ingest", tags=["Ingest"])
 
 if __name__ == "__main__":
     import uvicorn

@@ -1,0 +1,36 @@
+nohup: ignoring input
+INFO:     Loading environment from '.env'
+INFO:     Started server process [21052]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+Initializing clients...
+INFO:     127.0.0.1:48548 - "GET / HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:48548 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     147.86.175.62:10403 - "GET /docs HTTP/1.1" 200 OK
+INFO:     147.86.175.62:10403 - "GET /openapi.json HTTP/1.1" 200 OK
+WARNING:  Invalid HTTP request received.
+WARNING:  Invalid HTTP request received.
+WARNING:  Invalid HTTP request received.
+INFO:     147.86.175.55:10400 - "GET /docs HTTP/1.1" 200 OK
+INFO:     147.86.175.55:10400 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     147.86.175.62:10408 - "POST /api/v1/chat/stream HTTP/1.1" 401 Unauthorized
+INFO:     147.86.175.62:10420 - "GET /health HTTP/1.1" 404 Not Found
+INFO:     147.86.175.62:10420 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+WARNING:  Invalid HTTP request received.
+INFO:     147.86.175.62:10432 - "GET /docs HTTP/1.1" 200 OK
+INFO:     147.86.175.62:10432 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+ERROR:    Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/starlette/routing.py", line 738, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/usr/lib/python3.10/contextlib.py", line 206, in __aexit__
+    await anext(self.gen)
+  File "/root/scalable-rag-pipeline/services/api/main.py", line 30, in lifespan
+    await embed_client.close()
+AttributeError: 'RayEmbedClient' object has no attribute 'close'
+
+ERROR:    Application shutdown failed. Exiting.
+INFO:     Finished server process [21052]
+Closing clients...

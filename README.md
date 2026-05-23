@@ -317,3 +317,16 @@ The system uses aggressive scaling policies to minimize costs:
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
+
+## start up
+cd ~/scalable-rag-pipeline
+nohup uvicorn services.api.main:app --host 0.0.0.0 --port 8000 --env-file .env > /tmp/api.log 2>&1 &
+
+docker rm -f rag-frontend && docker run -d --name rag-frontend --network host -v ~/rag_frontend.py:/app/app.py python:3.11-slim bash -c "pip install streamlit requests -q && streamlit run /app/app.py --server.port 8501 --server.address 0.0.0.0 --server.headless true"
+
+## 拉取项目
+
+scp -r root@188.245.179.216:/root/scalable-rag-pipeline ./
+
+git config --global user.email "kkju1123@outlook.com"
+git config --global user.name "kkju1123"

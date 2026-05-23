@@ -52,7 +52,8 @@ async def planner_node(state: AgentState) -> dict:
         # Update State
         return {
             "current_query": plan.get("refined_query", user_query),
-            "plan": [plan["reasoning"]]
+            "plan": [plan["reasoning"]],
+            "language": state.get("language", "Chinese")
         }
         
     except Exception as e:
@@ -60,5 +61,6 @@ async def planner_node(state: AgentState) -> dict:
         # Fallback: Assume we need to search
         return {
             "current_query": user_query,
-            "plan": ["Error in planning, defaulting to retrieval."]
+            "plan": ["Error in planning, defaulting to retrieval."],
+            "language": state.get("language", "Chinese")
         }
